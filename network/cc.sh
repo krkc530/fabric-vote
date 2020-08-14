@@ -1,6 +1,6 @@
-CC_SRC_PATH=github.com/fabcar
+CC_SRC_PATH=github.com/vote
 CHANNEL_NAME=mychannel
-CCNAME=fabcar
+CCNAME=vote
 VERSION=1.0
 PEER1=peer0.org1.example.com:7051
 PEER2=peer0.org2.example.com:7051
@@ -14,10 +14,10 @@ docker exec -e "CORE_PEER_LOCALMSPID=Org3MSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/h
 -e "CORE_PEER_ADDRESS=$PEER3" cli peer chaincode install -n $CCNAME -v $VERSION -p ${CC_SRC_PATH}
 
 #chaincode instantiate
-docker exec cli peer chaincode instantiate -o orderer.example.com:7050 -C $CHANNEL_NAME -n $CCNAME -v $VERSION -c '{"Args":[]}' -P "AND ('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
+docker exec cli peer chaincode instantiate -o orderer.example.com:7050 -C $CHANNEL_NAME -n $CCNAME -v $VERSION -c '{"Args":[]}'
 sleep 3
 
 #chaincode test
-docker exec cli peer chaincode invoke -C $CHANNEL_NAME -n $CCNAME -c '{"Args":["initLedger"]}' --peerAddresses $PEER1 --peerAddresses $PEER2 --peerAddresses $PEER3
+docker exec cli peer chaincode invoke -C $CHANNEL_NAME -n $CCNAME -c '{"Args":["initLedger"]}' 
 sleep 3
 docker exec cli peer chaincode query -C $CHANNEL_NAME -n $CCNAME -c '{"Args":["queryAllCars"]}' 
