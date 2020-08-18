@@ -41,7 +41,7 @@ async function main() {
         // Submit the specified transaction.
         // createCar transaction - requires 5 argument, ex: ('createCar', 'CAR12', 'Honda', 'Accord', 'Black', 'Tom')
         // changeCarOwner transaction - requires 2 args , ex: ('changeCarOwner', 'CAR10', 'Dave')
-		var data = fs.readFileSync('./testFile', 'utf8').toString('base64')
+		var data = fs.readFileSync('../uploadFile.txt', 'utf8').toString('base64')
 		console.log('Read FIle done...');
 
         await contract.submitTransaction('upload', 'testFile', data);

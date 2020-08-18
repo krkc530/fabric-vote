@@ -7,6 +7,29 @@
 # Exit on first error, print all commands.
 set -ev
 
+function replacePrivateKey() {
+    echo "ca key file exchange"
+    cp docker-compose-template.yml docker-compose.yml
+    PRIV_KEY=$(ls crypto-config/peerOrganizations/org1.example.com/ca/ | grep _sk)
+    sed -i "s/CA_PRIVATE_KEY/${PRIV_KEY}/g" docker-compose.yml
+}
+
+function checkPrereqs() {
+    if [ ! -d "crypto-config"]; then
+        echo "crypto-config dir missing"
+        exit 1
+    fi
+
+    if [ ! -d "config"]; then
+        echo "config dir missing"
+        exit 1
+    fi
+}
+
+
+checkPrereqs
+replacePrivateKey
+
 # don't rewrite paths for Windows Git Bash users
 export MSYS_NO_PATHCONV=1
 
