@@ -18,7 +18,7 @@ async function main() {
         // Create a new file system based wallet for managing identities.
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
-        console.log(`Wallet path: ${walletPath}`);
+        //console.log(`Wallet path: ${walletPath}`);
 
         // Check to see if we've already enrolled the user.
         const userExists = await wallet.exists('user1');
@@ -37,13 +37,16 @@ async function main() {
 
         // Get the contract from the network.
         const contract = network.getContract('vote');
-
-        // Evaluate the specified transaction.
-        // queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
-        // queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
-		
+        
+        console.log('getting file list...'); 
         const result = await contract.evaluateTransaction('list');
-        console.log(`Transaction has been evaluated. result is ${result.toString()}`); 
+        var obj = JSON.parse(result);
+        
+        console.log('-------------------------------------------------------------------------------'); 
+        for (var i=0; i<obj.length; i++) {
+            console.log(`${i+1}. ${obj[i].Key}`); 
+        }
+        console.log('-------------------------------------------------------------------------------');         
 
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);
