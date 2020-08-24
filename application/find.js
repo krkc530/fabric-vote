@@ -13,12 +13,18 @@ const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 const ccp = JSON.parse(ccpJSON);
 
 async function main() {
+
+    var args = process.argv;
+    if (args.length != 3) {
+        console.log('Usage: node find.js "key"')
+        process.exit(1);
+    } 
     try {
 
         // Create a new file system based wallet for managing identities.
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
-        console.log(`Wallet path: ${walletPath}`);
+        //console.log(`Wallet path: ${walletPath}`);
 
         // Check to see if we've already enrolled the user.
         const userExists = await wallet.exists('user1');
@@ -37,13 +43,14 @@ async function main() {
 
         // Get the contract from the network.
         const contract = network.getContract('vote');
+        
+        console.log('find file...');
+        var result = await contract.evaluateTransaction('find', args[2]);
 
-        // Evaluate the specified transaction.
-        // queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
-        // queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
-		
-        const result = await contract.evaluateTransaction('find', 'testFile');
-        console.log(`Transaction has been evaluated. result is ${result}`); 
+        
+        var encodedData = result.toString();
+        var buff = Buffer.from(encodedData, 'base64');
+        console.log(`find file value : ${buff}`);
 
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);

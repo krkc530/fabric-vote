@@ -102,9 +102,9 @@ func (s *SmartContract) find(APIstub shim.ChaincodeStubInterface, args []string)
 	fileAsBytes, _ := APIstub.GetState(args[0])
 
 	// buffer is a JSON array containing QueryResults
-	var buffer bytes.Buffer
-	buffer.WriteString(string(fileAsBytes))
-	fmt.Printf("%s", buffer.String())
+	//var buffer bytes.Buffer
+	//buffer.WriteString(string(fileAsBytes))
+	//fmt.Printf("%s", buffer.String())
 	return shim.Success(fileAsBytes)
 }
 

@@ -40,12 +40,13 @@ async function main() {
         
         console.log('getting file list...'); 
         const result = await contract.evaluateTransaction('list');
-        var obj = JSON.parse(result);
+        //const obj = JSON.parse(result);
         
         console.log('-------------------------------------------------------------------------------'); 
-        for (var i=0; i<obj.length; i++) {
-            console.log(`${i+1}. ${obj[i].Key}`); 
-        }
+        //for (var i=0; i<obj.length; i++) {
+        //    console.log(`${i+1}. ${obj[i].Key}`); 
+        //}
+        console.log(`Transaction has been evaluated. result is ${result.toString()}`); 
         console.log('-------------------------------------------------------------------------------');         
 
     } catch (error) {
