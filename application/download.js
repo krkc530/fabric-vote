@@ -13,12 +13,18 @@ const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 const ccp = JSON.parse(ccpJSON);
 
 async function main() {
+
+    var args = process.argv;
+    if (args.length != 4) {
+        console.log('Usage: node download.js "key" "file"')
+        process.exit(1);
+    } 
     try {
 
         // Create a new file system based wallet for managing identities.
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
-        console.log(`Wallet path: ${walletPath}`);
+        //console.log(`Wallet path: ${walletPath}`);
 
         // Check to see if we've already enrolled the user.
         const userExists = await wallet.exists('user1');
@@ -37,15 +43,16 @@ async function main() {
 
         // Get the contract from the network.
         const contract = network.getContract('vote');
+        
+        console.log('download file...');
+        var result = await contract.evaluateTransaction('download', args[2]);
 
-        // Evaluate the specified transaction.
-        // queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
-        // queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
-		
-        const result = await contract.evaluateTransaction('download', 'testFile');
-        console.log(`Transaction has been evaluated`); 
-		fs.writeFileSync('../files/downloadFile.txt', result);
-		console.log('FIle download done');
+        console.log('save file...');
+        var encodedData = result.toString();
+        var buff = Buffer.from(encodedData, 'base64');
+        fs.writeFileSync(args[3], buff);
+        
+        console.log(`file saved as "${args[3]}"`);
 
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);
