@@ -18,6 +18,6 @@ docker exec cli peer chaincode instantiate -o orderer.example.com:7050 -C $CHANN
 sleep 3
 
 #chaincode test
-docker exec cli peer chaincode invoke -C $CHANNEL_NAME -n $CCNAME -c '{"Args":["upload", "testFileName","testFileStrings"]}' 
-sleep 3
-docker exec cli peer chaincode query -C $CHANNEL_NAME -n $CCNAME -c '{"Args":["list"]}' 
+#docker exec cli peer chaincode invoke -C $CHANNEL_NAME -n $CCNAME -c '{"Args":["upload", "testFileName","testFileStrings"]}' 
+#sleep 3
+#docker exec cli peer chaincode query -C $CHANNEL_NAME -n $CCNAME -c '{"Args":["list"]}' 

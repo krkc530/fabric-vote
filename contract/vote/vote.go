@@ -31,6 +31,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.download(APIstub, args)
 	} else if function == "list" {
 		return s.list(APIstub)
+	} else if function == "find" {
+		return s.find(APIstub, args)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
@@ -94,6 +96,20 @@ func (s *SmartContract) list(APIstub shim.ChaincodeStubInterface) sc.Response {
 	fmt.Printf("- list:\n%s\n", buffer.String())
 
 	return shim.Success(buffer.Bytes())
+}
+
+func (s *SmartContract) find(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	fileAsBytes, _ := APIstub.GetState(args[0])
+
+	// buffer is a JSON array containing QueryResults
+	var buffer bytes.Buffer
+	buffer.WriteString(string(fileAsBytes))
+	fmt.Printf("%s", buffer.String())
+	return shim.Success(fileAsBytes)
 }
 
 // The main function is only relevant in unit test mode. Only included here for completeness.

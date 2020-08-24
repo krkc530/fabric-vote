@@ -44,7 +44,7 @@ async function main() {
 		
         const result = await contract.evaluateTransaction('download', 'testFile');
         console.log(`Transaction has been evaluated`); 
-		fs.writeFileSync('./downloadFile', result);
+		fs.writeFileSync('../files/downloadFile.txt', result);
 		console.log('FIle download done');
 
     } catch (error) {
