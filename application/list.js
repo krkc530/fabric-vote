@@ -40,7 +40,7 @@ async function main() {
         
         console.log('getting file list...'); 
         const result = await contract.evaluateTransaction('list');
-        //const obj = JSON.parse(result);
+        //var obj = JSON.parse(result);
         
         console.log('-------------------------------------------------------------------------------'); 
         //for (var i=0; i<obj.length; i++) {

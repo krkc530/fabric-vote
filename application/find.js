@@ -16,7 +16,7 @@ async function main() {
 
     var args = process.argv;
     if (args.length != 3) {
-        console.log('Usage: node find.js "key"')
+        console.log('Usage: node find_2.js "key"')
         process.exit(1);
     } 
     try {
@@ -45,12 +45,16 @@ async function main() {
         const contract = network.getContract('vote');
         
         console.log('find file...');
-        var result = await contract.evaluateTransaction('find', args[2]);
+        var result = await contract.evaluateTransaction('download', args[2]);
+
+        console.log(`find file ${args[2]}'s value :: ${result}`);
 
         
         var encodedData = result.toString();
         var buff = Buffer.from(encodedData, 'base64');
-        console.log(`find file value : ${buff}`);
+        //fs.writeFileSync(args[3], buff);
+        
+        console.log(`find file value :: ${buff}`);
 
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);
