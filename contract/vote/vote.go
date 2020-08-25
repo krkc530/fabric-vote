@@ -1,12 +1,8 @@
 package main
 
-/* Imports
- * 4 utility libraries for formatting, handling bytes, reading and writing JSON, and string manipulation
- * 2 specific Hyperledger Fabric specific libraries for Smart Contracts
- */
 import (
-	"bytes"
 	"fmt"
+	"encoding/json"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
@@ -14,6 +10,18 @@ import (
 
 // Define the Smart Contract structure
 type SmartContract struct {
+}
+
+//Define data structure
+type File struct {
+	Tag string `json:"tag"` //for Find function
+	Data []byte //File as Bytes
+}
+
+// QueryResult structure used for handling result of query
+type QueryResult struct { 
+	Key	string `json:"Key"`
+	Tag	string `json:"Tag"`
 }
 
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) sc.Response {
@@ -30,18 +38,68 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 	} else if function == "download" {
 		return s.download(APIstub, args)
 	} else if function == "list" {
-		return s.list(APIstub)
+		return s.queryAllFiles(APIstub)
+	} else if function == "show" {
+		return s.queryFile(APIstub, args)
 	}
 
 	return shim.Error("Invalid Smart Contract function name.")
 }
 
-func (s *SmartContract) upload(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
-	}
-	APIstub.PutState(args[0], []byte(args[1]))
+func (s *SmartContract) getFile(APIstub shim.ChaincodeStubInterface, key string) (*File, error) {
 
+	fileAsBytes, err := APIstub.GetState(key)
+	
+	if err != nil {
+		return nil, err
+	}
+	if fileAsBytes == nil {
+		return nil, nil
+	}
+
+	file := new(File)
+	json.Unmarshal(fileAsBytes, file)
+
+	return file, nil
+}
+
+func (s *SmartContract) putFile(APIstub shim.ChaincodeStubInterface, key string, file *File) error {
+
+	fileAsBytes, err := json.Marshal(file)
+	
+	if err != nil {
+		return err
+	}
+	if err := APIstub.PutState(key, fileAsBytes); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *SmartContract) upload(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 3 { //args : key, tag, bytes
+		return shim.Error("Incorrect number of arguments. Expecting 3")
+	}
+	file, err := s.getFile(APIstub, args[0]); 
+	if err != nil {
+		Resp := "Failed to get state for " + args[0]
+		return shim.Error(Resp)
+	}
+	if file != nil { //check if key already exist
+		Resp := "file already exist: " + args[0]
+		return shim.Error(Resp)
+	}
+
+	file = new(File)
+	file.Tag = args[1]
+	file.Data = []byte(args[2])
+
+	if err := s.putFile(APIstub, args[0], file); err != nil {
+		Resp := "Failed to put state for " + args[0]
+		return shim.Error(Resp)
+	}
+	
 	return shim.Success(nil)
 }
 
@@ -49,47 +107,67 @@ func (s *SmartContract) download(APIstub shim.ChaincodeStubInterface, args []str
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
+	file, err := s.getFile(APIstub, args[0]); 
+	if err != nil {
+		Resp := "Failed to get state for " + args[0]
+		return shim.Error(Resp)
+	}
+	if file == nil { //check if key doesn't exist
+		Resp := "file does not exist: " + args[0]
+		return shim.Error(Resp)
+	}
 
-	fileAsBytes, _ := APIstub.GetState(args[0])
-	return shim.Success(fileAsBytes)
+	return shim.Success(file.Data)
 }
 
-func (s *SmartContract) list(APIstub shim.ChaincodeStubInterface) sc.Response {
+func (s *SmartContract) queryFile(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	file, err := s.getFile(APIstub, args[0]); 
+	if err != nil {
+		Resp := "Failed to get state for " + args[0]
+		return shim.Error(Resp)
+	}
+	if file == nil { //check if key doesn't exist
+		Resp := "file does not exist: " + args[0]
+		return shim.Error(Resp)
+	}
+	queryResult := QueryResult{Key: args[0], Tag: file.Tag}
+	resultAsBytes, err := json.Marshal(queryResult)
+
+	return shim.Success(resultAsBytes)
+}
+
+func (s *SmartContract) queryAllFiles(APIstub shim.ChaincodeStubInterface) sc.Response {
 	startKey := ""
 	endKey := ""
 
 	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
+
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	defer resultsIterator.Close()
 
-	// buffer is a JSON array containing QueryResults
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
+	results := []QueryResult{}
 
-	bArrayMemberAlreadyWritten := false
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
+
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		// Add a comma before array members, suppress it for the first array member
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-		buffer.WriteString("}")
-		bArrayMemberAlreadyWritten = true
+
+		file := new(File)
+		_ = json.Unmarshal(queryResponse.Value, file)
+
+		queryResult := QueryResult{Key: queryResponse.Key, Tag: file.Tag}
+		results = append(results, queryResult)
 	}
-	buffer.WriteString("]")
+	resultsAsBytes, err := json.Marshal(results)
 
-	fmt.Printf("- list:\n%s\n", buffer.String())
-
-	return shim.Success(buffer.Bytes())
+	return shim.Success(resultsAsBytes)
 }
 
 // The main function is only relevant in unit test mode. Only included here for completeness.
