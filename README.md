@@ -28,7 +28,7 @@
 키에 해당하는 파일을 filePath에 저장합니다.
 
 ### 리스트(검색)
-`node vote list -tag tag(Optional)`
+`node vote list -t tag(Optional)`
 
 태그 옵션이 없으면 모든 파일의 리스트를 가져옵니다.
 
