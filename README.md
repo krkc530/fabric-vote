@@ -1,7 +1,18 @@
 # fabric-vote
 
+## 1. Network 실행
+`cd network`
 
-## Usage
+`./start.sh`
+
+네트워크 구성 정보는 connection.json 참조
+
+## 2. Chaincode 설치 및 배포, 테스트
+`cd network`
+
+`./cc.sh`
+
+## 3. NodeJS App
 디렉토리 이동
 
 `cd application`
